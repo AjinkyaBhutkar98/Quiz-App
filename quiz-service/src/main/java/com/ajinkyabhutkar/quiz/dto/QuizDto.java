@@ -22,4 +22,6 @@ public class QuizDto {
     private  Boolean live;
     private  Integer passingMarks;
     private  Long categoryId;
+
+    private CategoryDto categoryDto;
 }
