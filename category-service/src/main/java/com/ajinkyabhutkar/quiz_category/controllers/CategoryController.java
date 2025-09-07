@@ -34,7 +34,7 @@ public class CategoryController {
 
         CategoryDto categoryDto1=categoryService.getCategoryById(id);
 
-        return new ResponseEntity<>(categoryDto1, HttpStatus.CREATED);
+        return new ResponseEntity<>(categoryDto1, HttpStatus.OK);
     }
 
     //get all categories
