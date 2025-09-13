@@ -4,6 +4,7 @@ import com.ajinkyabhutkar.quiz.collections.Quiz;
 import com.ajinkyabhutkar.quiz.dto.CategoryDto;
 import com.ajinkyabhutkar.quiz.dto.QuizDto;
 import com.ajinkyabhutkar.quiz.repo.QuizRepo;
+import com.ajinkyabhutkar.quiz.service.CategoryFeignService;
 import com.ajinkyabhutkar.quiz.service.CategoryService;
 import com.ajinkyabhutkar.quiz.service.QuizService;
 
@@ -39,6 +40,9 @@ public class QuizServiceImpl implements QuizService {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private CategoryFeignService categoryFeignService;
 
 
     @Override
@@ -97,7 +101,14 @@ public class QuizServiceImpl implements QuizService {
     public List<QuizDto> findByCategory(Long categoryId) {
 
         List<Quiz> quizByCategory = quizRepo.findByCategoryId(categoryId);
-        return quizByCategory.stream().map(quiz -> modelMapper.map(quiz, QuizDto.class)).toList();
+        return quizByCategory.stream().map(quiz -> {
+            QuizDto quizDto=modelMapper.map(quiz,QuizDto.class);
+
+            CategoryDto categoryDto=categoryFeignService.getSingleCategory(quizDto.getCategoryId());
+
+            quizDto.setCategoryDto(categoryDto);
+            return quizDto;
+        }).toList();
     }
 
     @Override
