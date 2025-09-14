@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
-@FeignClient(name = "category-service",url = "http://localhost:9091/api/v1")
+@FeignClient(name = "CATEGORY-SERVICE")
 public interface CategoryFeignService {
 
     //get all category
-    @GetMapping("/categories")
-    List<CategoryDto> findALl();
+    @GetMapping("/api/v1/categories")
+    List<CategoryDto> findAll();
 
     //get single category
-    @GetMapping("/categories/{id}")
+    @GetMapping("/api/v1/categories/{id}")
     CategoryDto getSingleCategory(@PathVariable Long id);
 
     //create cateogry

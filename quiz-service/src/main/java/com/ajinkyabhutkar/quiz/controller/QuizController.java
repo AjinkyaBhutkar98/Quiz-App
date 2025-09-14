@@ -50,7 +50,7 @@ public class QuizController {
         return ResponseEntity.noContent().build();  // 204 with empty body
     }
 
-    @GetMapping("/category/{id}")
+    @GetMapping("/categories/{id}")
     public ResponseEntity<List<QuizDto>> getByCategoryId(@PathVariable Long id){
 
         return new ResponseEntity<>(quizService.findByCategory(id),HttpStatus.OK);

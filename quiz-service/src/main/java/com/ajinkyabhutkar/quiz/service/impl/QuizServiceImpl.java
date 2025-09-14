@@ -50,7 +50,7 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = modelMapper.map(quizDto, Quiz.class);
         quiz.setId(UUID.randomUUID().toString());
 
-        String url = "http://localhost:9091/api/v1/categories/" + quizDto.getCategoryId();
+        String url = "http://CATEGORY-SERVICE/api/v1/categories/" + quizDto.getCategoryId();
         logger.info("Category url : {}", url);
         //call to category service
         CategoryDto categoryDto = restTemplate.getForObject(url, CategoryDto.class);
@@ -68,7 +68,7 @@ public class QuizServiceImpl implements QuizService {
         //get categoryid
         Long categoryId = quiz.getCategoryId();
         //define url
-        String url = "http://localhost:9091/api/v1/categories/" + categoryId;
+        String url = "http://CATEGORY-SERVICE/api/v1/categories/" + categoryId;
         logger.info("Category url : {}", url);
         //call to category service
         CategoryDto categoryDto = restTemplate.getForObject(url, CategoryDto.class);
@@ -77,24 +77,24 @@ public class QuizServiceImpl implements QuizService {
         return quizDto;
     }
 
-    @Override
     public List<QuizDto> getAllQuiz() {
-        List<Quiz> allQuiz = quizRepo.findAll();
+        List<Quiz> all = quizRepo.findAll();
+//        all.forEach(x-> System.out.print(x.getCategoryId()));
+        // getting category of all quiz
+        logger.info("get all quizzes");
+        List<QuizDto> quizDtos = all.stream().map(quiz -> {
+            Long categoryId = quiz.getCategoryId();
+            QuizDto quizDto = modelMapper.map(quiz, QuizDto.class);
+            //call to quiz service using webclient
+            CategoryDto categoryDto = this.categoryService.findById(categoryId);
+            quizDto.setCategoryDto(categoryDto);
+            return quizDto;
+        }).toList();
 
-        // Map each Quiz to QuizDto
-        return allQuiz.stream()
-                .map(quiz -> {
-                    Long categoryId = quiz.getCategoryId();
 
-                    QuizDto quizDto = modelMapper.map(quiz, QuizDto.class);
-
-                    CategoryDto categoryDto = categoryService.findById(categoryId);
-                    quizDto.setCategoryDto(categoryDto); // setter called
-
-                    return quizDto;
-                })
-                .toList();
+        return quizDtos;
     }
+
 
 
     @Override

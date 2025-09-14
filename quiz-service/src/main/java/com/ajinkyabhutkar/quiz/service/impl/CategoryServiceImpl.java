@@ -17,24 +17,22 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-
     private Logger logger = LoggerFactory.getLogger(QuizServiceImpl.class);
-
-    @Autowired
     private ModelMapper modelMapper;
-
-    @Autowired
     private QuizRepo quizRepo;
-
+    private WebClient.Builder webClient;
 
     @Autowired
-    private WebClient webClient;
-
+    public CategoryServiceImpl(ModelMapper modelMapper, QuizRepo quizRepo, WebClient.Builder webClient) {
+        this.modelMapper = modelMapper;
+        this.quizRepo = quizRepo;
+        this.webClient = webClient.baseUrl("http://CATEGORY-SERVICE");
+    }
 
     @Override
     public CategoryDto findById(Long categoryId) {
         try {
-            CategoryDto categoryDto = webClient
+            CategoryDto categoryDto = webClient.build()
                     //get is just a request method
                     .get()
                     //uri to send requestn on baseurl+ uri
@@ -46,7 +44,8 @@ public class CategoryServiceImpl implements CategoryService {
                     //blocking request- remove block() for nonblocking if you want to use nonblocking request
                     .block();
 
-
+            System.out.println(categoryDto);
+            logger.info("returning category dtos");
             return categoryDto;
 
 
@@ -65,9 +64,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> findAll() {
-        return this.webClient
+
+       logger.info("in get all method for category service");
+        return this.webClient.build()
                 .get()
-                .uri("api/v1/categories")
+                .uri("/api/v1/categories")
                 .retrieve()
                 //body to flux means multiple object in response
                 .bodyToFlux(CategoryDto.class)
@@ -78,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto create(CategoryDto categoryDto) {
 
-        return this.webClient
+        return this.webClient.build()
                 .post()
                 .uri("api/v1/categories")
                 .bodyValue(categoryDto)
@@ -90,7 +91,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto update(String categoryId, CategoryDto categoryDto) {
-        return this.webClient
+        return this.webClient.build()
                 .put()
                 .uri("api/v1/categories/{categoryId}", categoryId)
                 .bodyValue(categoryDto)
@@ -102,7 +103,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(String categoryId) {
 
-        this.webClient
+        this.webClient.build()
                 .delete()
                 .uri("api/v1/categories/{categoryId}", categoryId)
                 .retrieve()
