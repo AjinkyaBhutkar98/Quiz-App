@@ -50,7 +50,7 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = modelMapper.map(quizDto, Quiz.class);
         quiz.setId(UUID.randomUUID().toString());
 
-        String url = "http://CATEGORY-SERVICE/api/v1/categories/" + quizDto.getCategoryId();
+        String url = "lb://CATEGORY-SERVICE/api/v1/categories/" + quizDto.getCategoryId();
         logger.info("Category url : {}", url);
         //call to category service
         CategoryDto categoryDto = restTemplate.getForObject(url, CategoryDto.class);
@@ -68,7 +68,7 @@ public class QuizServiceImpl implements QuizService {
         //get categoryid
         Long categoryId = quiz.getCategoryId();
         //define url
-        String url = "http://CATEGORY-SERVICE/api/v1/categories/" + categoryId;
+        String url = "lb://CATEGORY-SERVICE/api/v1/categories/" + categoryId;
         logger.info("Category url : {}", url);
         //call to category service
         CategoryDto categoryDto = restTemplate.getForObject(url, CategoryDto.class);
