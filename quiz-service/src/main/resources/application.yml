@@ -1,5 +1,20 @@
 
+server:
+  port: 8282
 spring:
+  application:
+    name: quiz-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/guizdb
+      uri: mongodb://localhost:27017/quizdb
+  profiles:
+    active: dev
+  config:
+    import: configserver:http://localhost:9094
+
+    eureka:
+      client:
+        register-with-eureka: true
+        fetch-registry: true
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
