@@ -3,6 +3,9 @@ package com.ajinkyabhutkar.quiz.controller;
 import com.ajinkyabhutkar.quiz.dto.ApiResponse;
 import com.ajinkyabhutkar.quiz.dto.QuizDto;
 import com.ajinkyabhutkar.quiz.service.QuizService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +19,9 @@ public class QuizController {
 
     @Autowired
     private QuizService quizService;
+
+//    @Autowired
+    private Logger logger= LoggerFactory.getLogger(this.getClass());
 
     //create quiz
     @PostMapping
@@ -32,10 +38,16 @@ public class QuizController {
     }
 
     //get quiz by id
+    int i=0; // for retry pattern
     @GetMapping
+    @CircuitBreaker(name = "quizCircuitBreaker",fallbackMethod = "quizFallback")
     public ResponseEntity<List<QuizDto>> getAllQuiz(){
-
+        logger.info("getting all quizzes {}",i++);
         return new ResponseEntity<>(quizService.getAllQuiz(),HttpStatus.OK);
+    }
+
+    public ResponseEntity<List<QuizDto>> quizFallback(){
+        return new ResponseEntity<>(List.of(),HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @PutMapping("/{id}")
