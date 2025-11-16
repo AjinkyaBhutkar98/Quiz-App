@@ -1,0 +1,27 @@
+
+spring:
+  application:
+    name: question-generator
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/questionsdb
+server:
+  port: 9096
+
+  # In application.yml
+  spring:
+    ai:
+      openai:
+        api-key: ${OPENAI_API_KEY}
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+
+
+      

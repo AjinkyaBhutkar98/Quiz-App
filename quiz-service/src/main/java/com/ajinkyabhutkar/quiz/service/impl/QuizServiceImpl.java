@@ -8,42 +8,46 @@ import com.ajinkyabhutkar.quiz.service.CategoryFeignService;
 import com.ajinkyabhutkar.quiz.service.CategoryService;
 import com.ajinkyabhutkar.quiz.service.QuizService;
 
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class QuizServiceImpl implements QuizService {
 
     private Logger logger = LoggerFactory.getLogger(QuizServiceImpl.class);
 
-    @Autowired
     private ModelMapper modelMapper;
 
-    @Autowired
     private QuizRepo quizRepo;
 
-    @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
     private CategoryService categoryService;
 
-    @Autowired
     private CategoryFeignService categoryFeignService;
 
+    private StreamBridge streamBridge;
+
+    @Autowired
+    public QuizServiceImpl(ModelMapper modelMapper, QuizRepo quizRepo, RestTemplate restTemplate, CategoryService categoryService, CategoryFeignService categoryFeignService, StreamBridge streamBridge) {
+
+        this.modelMapper = modelMapper;
+        this.quizRepo = quizRepo;
+        this.restTemplate = restTemplate;
+        this.categoryService = categoryService;
+        this.categoryFeignService = categoryFeignService;
+        this.streamBridge = streamBridge;
+    }
 
     @Override
     public QuizDto createQuiz(QuizDto quizDto) {
@@ -57,7 +61,25 @@ public class QuizServiceImpl implements QuizService {
         quizDto.setCategoryDto(categoryDto);
 
         Quiz savedQuiz = quizRepo.save(quiz);
+        //after quiz created we will publish a msg to the broker
+        publishQuizCreatedEvent(quizDto);
         return modelMapper.map(savedQuiz, QuizDto.class);
+
+
+
+    }
+
+    public void publishQuizCreatedEvent(QuizDto quizDto) {
+
+        logger.info("publish quiz created event:");
+        //copy binding name from yaml
+        var success=this.streamBridge.send("quizCreatedBinding-out-0",quizDto);
+
+        if(success){
+            logger.info("event is sent to broker");
+        }else{
+            logger.info("event is not sent to broker");
+        }
     }
 
     @Override
@@ -79,10 +101,9 @@ public class QuizServiceImpl implements QuizService {
 
     public List<QuizDto> getAllQuiz() {
         List<Quiz> all = quizRepo.findAll();
-//        all.forEach(x-> System.out.print(x.getCategoryId()));
         // getting category of all quiz
         logger.info("get all quizzes");
-        List<QuizDto> quizDtos = all.stream().map(quiz -> {
+        return all.stream().map(quiz -> {
             Long categoryId = quiz.getCategoryId();
             QuizDto quizDto = modelMapper.map(quiz, QuizDto.class);
             //call to quiz service using webclient
@@ -90,9 +111,6 @@ public class QuizServiceImpl implements QuizService {
             quizDto.setCategoryDto(categoryDto);
             return quizDto;
         }).toList();
-
-
-        return quizDtos;
     }
 
 
@@ -113,7 +131,6 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     public QuizDto updateQuiz(QuizDto quizDto, String id) {
-        Quiz quiz = quizRepo.findById(id).orElseThrow(() -> new RuntimeException("Quiz Not Found" + id));
         Quiz savedQuiz = quizRepo.save(modelMapper.map(quizDto, Quiz.class));
 
         return modelMapper.map(savedQuiz, QuizDto.class);
