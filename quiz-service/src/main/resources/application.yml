@@ -24,7 +24,10 @@ spring:
       bindings:
         quizCreatedBinding-out-0:
           destination: quiz-created
-          binder: rabbit
+          group: ${spring.application.name}
+          acknowledgement-in-0:
+            destination: acknowledge-quiz
+            group: ${spring.application.name}
 
     rabbitmq:
       host: localhost

@@ -26,7 +26,9 @@ spring:
         getQuizBinding-in-0:
           destination: quiz-created
           group: ${spring.application.name}
-          binder: rabbit
+        getQuizBinding-out-0:
+          destination: acknowledge-quiz
+          group: ${spring.application.name}
 
     rabbitmq:
       host: localhost
@@ -34,6 +36,10 @@ spring:
       username: guest
       password: guest
       connection-timeout: 10s
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
 
 eureka:
   client:
@@ -50,9 +56,3 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 4
         failureRateThreshold: 50.0
         waitDurationInOpenState: 10s
-
-      # In application.yml
-      spring:
-        ai:
-          openai:
-            api-key: ${OPENAI_API_KEY}
