@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -62,8 +64,9 @@ public class QuizServiceImpl implements QuizService {
 
         Quiz savedQuiz = quizRepo.save(quiz);
         //after quiz created we will publish a msg to the broker
-        publishQuizCreatedEvent(quizDto);
-        return modelMapper.map(savedQuiz, QuizDto.class);
+        QuizDto newQuiz=modelMapper.map(savedQuiz, QuizDto.class);
+        publishQuizCreatedEvent(newQuiz);
+        return newQuiz;
 
 
 
@@ -72,12 +75,17 @@ public class QuizServiceImpl implements QuizService {
     public void publishQuizCreatedEvent(QuizDto quizDto) {
 
         logger.info("publish quiz created event:");
-        //copy binding name from yaml
-        var success=this.streamBridge.send("quizCreatedBinding-out-0",quizDto);
 
-        if(success){
+        Message<QuizDto> message = MessageBuilder
+                .withPayload(quizDto)
+                .setHeader("Content-Type", "application/json")  // VERY IMPORTANT
+                .build();
+
+        boolean success = streamBridge.send("quizCreatedBinding-out-0", message);
+
+        if (success) {
             logger.info("event is sent to broker");
-        }else{
+        } else {
             logger.info("event is not sent to broker");
         }
     }

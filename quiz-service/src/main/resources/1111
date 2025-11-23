@@ -1,13 +1,13 @@
 server:
-  port: 9096
+  port: 8282
 
 spring:
   application:
-    name: question-generator
+    name: quiz-service
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/questionsdb
+      uri: mongodb://localhost:27017/quizdb
 
   profiles:
     active: dev
@@ -17,29 +17,28 @@ spring:
 
   cloud:
     function:
-      definition: getQuizBinding
+      definition:
       web:
         path: "/functions"
 
     stream:
+      defaultBinder: kafkaBinder
+      binders:
+        kafkaBinder:
+          type: kafka
+      kafka:
+        binder:
+          brokers: localhost:9092
+
       bindings:
-        getQuizBinding-in-0:
+        quizCreatedBinding-out-0:
           destination: quiz-created
-          group: ${spring.application.name}
-        getQuizBinding-out-0:
+          contentType: application/json
+
+        acknowledgement-in-0:
           destination: acknowledge-quiz
           group: ${spring.application.name}
-
-    rabbitmq:
-      host: localhost
-      port: 5672
-      username: guest
-      password: guest
-      connection-timeout: 10s
-
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
+          contentType: application/json
 
 eureka:
   client:
