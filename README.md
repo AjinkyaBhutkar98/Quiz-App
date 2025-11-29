@@ -1,25 +1,26 @@
-Here’s a clean, well-structured **README.md** you can directly use in your GitHub repository.
-I organized and expanded your points into a professional format while keeping the technical details intact.
+Here is the **updated README.md** including **Spring Cloud Stream** for Kafka.
+You can copy/paste this directly into your GitHub repository.
 
 ---
 
 # **Microservices Quiz Application**
 
-A distributed **Microservices-based Quiz Application** built with **Spring Boot**, featuring automated question generation, secure APIs, asynchronous communication, fault-tolerance patterns, and centralized configuration. This project demonstrates modern microservices architecture using Spring Cloud, Kafka, Keycloak, Circuit Breaker, API Gateway, Eureka, and more.
+A distributed **Microservices-based Quiz Application** built with **Spring Boot**, featuring automated question generation, secure APIs, asynchronous communication, fault-tolerance patterns, and centralized configuration. This project demonstrates modern microservices architecture using **Spring Cloud**, **Spring Cloud Stream (Kafka Binder)**, **Keycloak**, **Circuit Breaker**, **API Gateway**, **Eureka**, and more.
 
 ---
 
 ## 🚀 **Project Overview**
 
 This application allows users to create quizzes.
+
 When a quiz is created:
 
-1. The **Quiz Service** publishes a Kafka event.
-2. The **Question Generator Service** listens to the event.
+1. The **Quiz Service** publishes a Kafka event using **Spring Cloud Stream**.
+2. The **Question Generator Service** listens to that event via Spring Cloud Stream consumer bindings.
 3. It automatically generates **10 questions** and associates them with the quiz.
-4. The entire process is authenticated with **Keycloak** and monitored using **Actuator**.
+4. All services are authenticated with **Keycloak** and monitored via **Actuator**.
 
-The system uses best practices for microservices communication, security, service discovery, and fault resilience.
+The system uses modern communication, security, service discovery, and fault tolerance patterns.
 
 ---
 
@@ -27,40 +28,38 @@ The system uses best practices for microservices communication, security, servic
 
 ### **1. Quiz Service**
 
-* Handles quiz creation and management.
-* Publishes events to Kafka when a quiz is created.
-* Communicates with other services using:
+* Handles quiz creation.
+* Publishes quiz-created events to Kafka via **Spring Cloud Stream**.
+* Uses:
 
-  * **RestTemplate**
-  * **Feign Client**
-  * **WebClient**
+  * RestTemplate
+  * Feign Client
+  * WebClient
+* Secured through Keycloak.
 
 ### **2. Question Generator Service**
 
-* Consumes Kafka messages.
-* Generates 10 questions automatically.
-* Sends response or persists generated questions.
+* Consumes Kafka messages using **Spring Cloud Stream Binder for Kafka**.
+* Automatically generates 10 questions.
+* Saves generated data or responds back through APIs.
 
 ### **3. API Gateway**
 
-* Secures endpoints.
-* Routes and filters incoming requests.
-* Integrates with Keycloak for authentication.
+* Secures and routes incoming requests.
+* Validates Keycloak tokens.
 
-### **4. Eureka Service Registry**
+### **4. Eureka Server**
 
 * Registers all microservices.
-* Enables service discovery for internal communication.
+* Enables service discovery.
 
 ### **5. Config Server**
 
-* Provides centralized configuration for all services.
-* Supports different environments (dev, prod, test).
+* Manages central configurations for all microservices.
 
 ### **6. Keycloak Auth Server**
 
-* Identity and access management.
-* Realm-based authentication for users and services.
+* Manages users, roles, and realms.
 
 ---
 
@@ -68,112 +67,139 @@ The system uses best practices for microservices communication, security, servic
 
 ### 🔐 **Authentication & Authorization**
 
-* Implemented using **Keycloak**
-* Realm-based user and role management
-* Token validation through API Gateway
+* Keycloak with realm-level access control.
+* API Gateway secured using Bearer Token validation.
 
 ### 📡 **Inter-Service Communication**
 
 * **Feign Client** for declarative REST calls
-* **RestTemplate** for synchronous communication
-* **WebClient** for reactive, non-blocking communication
-
-### 💬 **Asynchronous Messaging**
-
-* **Apache Kafka**
-
-  * Sends quiz events from Quiz Service to Question Generator Service
-  * Overcomes temporal coupling between services
-
-### ⚙️ **Fault Tolerance**
-
-* **Circuit Breaker Pattern**
-
-  * Prevents cascading failure when a service is down
-* **Retry Pattern**
-
-  * Prevents unlimited retries and adds structured retry mechanism
-* Implemented using **Resilience4j**
-
-### 🎛 **Service Discovery**
-
-* **Eureka Server** for service registration
-* Auto-discovery for all microservices
-
-### 🔐 **API Gateway**
-
-* Routes external requests
-* Adds an authentication layer
-* Protects internal microservices
-
-### 🗂 **Centralized Configuration**
-
-* **Spring Cloud Config Server**
-* Stores profiles for each microservice (dev, test, prod)
-
-### 📊 **Logging & Monitoring**
-
-* **Actuator** for health checks and metrics
-* Centralized loggers
-* Service-level monitoring
+* **RestTemplate** for synchronous operations
+* **WebClient** for reactive communication
 
 ---
 
-## 📦 **Architecture Diagram**
+## 💬 **Asynchronous Messaging with Kafka**
 
-*(You may add a diagram here later if you have one.)*
+Implemented using **Spring Cloud Stream Kafka Binder**.
+
+### ✔ Features:
+
+* Decoupled microservices via messaging
+* Easy event publisher and consumer configuration
+* Payload-based communication using JSON
+* Topic creation/management from configuration
+
+### 📌 Example:
+
+* Quiz Service → *Message Producer* (quiz-created event)
+* Question Generator Service → *Message Consumer*
+
+Spring Cloud Stream simplifies message handling with functional bindings such as:
+
+```java
+@Bean
+public Supplier<Message<QuizEvent>> quizEventPublisher() { ... }
+
+@Bean
+public Consumer<QuizEvent> quizEventConsumer() { ... }
+```
+
+---
+
+## ⚙️ **Fault Tolerance (Resilience4j)**
+
+* **Circuit Breaker Pattern**
+  Prevents cascading failures when dependent services are unavailable.
+
+* **Retry Pattern**
+  Limits retries and adds delays to prevent infinite calling loops.
+
+---
+
+## 🎛 **Service Discovery**
+
+* **Netflix Eureka Server**
+  Auto-registers each microservice for easy discovery and load balancing.
+
+---
+
+## 🛡 **API Gateway**
+
+* Central entry point for all service calls.
+* Integrates with Keycloak for authentication.
+* Applies security filters and routing rules.
+
+---
+
+## 🗂 **Centralized Configuration**
+
+* Spring Cloud Config Server stores:
+
+  * Profiles (dev, test, prod)
+  * Kafka properties
+  * Eureka properties
+  * Keycloak configuration
+  * Logging and management settings
+
+---
+
+## 📊 **Logging & Monitoring**
+
+* **Spring Boot Actuator** for health metrics.
+* Centralized logging.
+* Exposed endpoints for monitoring each microservice.
+
+---
+
+## 📡 **Spring Cloud Stream Kafka Binder Setup**
+
+### **Producer (Quiz Service)**
+
+Publishes quiz-created events.
+
+```yaml
+spring:
+  cloud:
+    stream:
+      bindings:
+        quizCreated-out-0:
+          destination: quiz-created-topic
+      kafka:
+        binder:
+          brokers: localhost:9092
+```
+
+### **Consumer (Question Generator Service)**
+
+Consumes quiz-created events.
+
+```yaml
+spring:
+  cloud:
+    stream:
+      bindings:
+        quizCreated-in-0:
+          destination: quiz-created-topic
+          group: question-generator-group
+```
+
+This abstraction removes the boilerplate Kafka template and listener code.
 
 ---
 
 ## 🧪 **How the Application Works**
 
-**Flow:**
-
-1. User authenticates via **Keycloak**.
-2. User requests quiz creation → API Gateway → Quiz Service.
+1. User logs in via Keycloak.
+2. Sends a request to create a quiz → API Gateway → Quiz Service.
 3. Quiz Service:
 
    * Saves quiz
-   * Publishes `quiz_created` event to Kafka
+   * Sends Kafka event using Spring Cloud Stream
 4. Question Generator Service:
 
    * Consumes event
    * Generates 10 questions
-   * Saves them / returns via API
-5. User can fetch quiz with generated questions.
-
----
-
-## 🚀 **Running the Project**
-
-### **Prerequisites**
-
-Make sure you have installed:
-
-* Java 17+
-* Maven / Gradle
-* Docker (for Kafka & Keycloak)
-* Spring Boot CLI (optional)
-
-### **Steps**
-
-1. Start
-
-   * Kafka broker
-   * Zookeeper
-   * Keycloak server
-   * Config Server
-   * Eureka Server
-2. Start
-
-   * Quiz Service
-   * Question Generator Service
-   * API Gateway
-3. Access services through:
-
-   * **Gateway URL** → `/api/...`
-   * **Eureka Dashboard**
-   * **Keycloak Admin Console**
+5. User retrieves quiz along with generated questions.
 
 ---
 
@@ -181,7 +207,6 @@ Make sure you have installed:
 
 ```
 /quiz-service
-/category-service
 /question-generator-service
 /api-gateway
 /eureka-server
@@ -194,15 +219,13 @@ Make sure you have installed:
 
 ## 📚 **Future Enhancements**
 
-* Add UI for quiz participation
-* Add distributed tracing with **Zipkin** or **Jaeger**
-* Implement Docker Compose / Kubernetes deployment
-* Add responses caching using Redis
+* Add React/Angular UI
+* Add distributed tracing with Zipkin or Jaeger
+* Convert services to fully reactive architecture
+* Add Redis caching layer
 
 ---
 
 ## 🤝 **Contributing**
 
-Contributions are welcome!
-Feel free to submit issues or pull requests.
-
+Contributions are welcome—feel free to open a pull request or raise an issue!
