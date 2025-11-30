@@ -56,7 +56,7 @@ A lightweight microservices-based Quiz Application built with **Spring Boot**, u
 ## ▶️ **Requirements**
 
 * Java 17+
-* Kafka & Zookeeper
+* Kafka 4.1.0
 * Keycloak
 * Eureka Server
 * Config Server
